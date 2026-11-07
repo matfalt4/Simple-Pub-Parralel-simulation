@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<pthread.h>
-
+#include<unistd.h> // header including sleep() func.
+ 
 #define NUM_OF_CUST 10
 #define NUM_OF_MUGS 5
 #define NUM_OF_TAPS 3
@@ -17,14 +18,47 @@ void* customer(void* arg){
 
     printf("customer %d walked into the pub.\n", id);
 
+    while(1){
+
+        pthread_mutex_lock(&mutex_mugs);
+
+        if(free_mugs > 0){
+            free_mugs--;
+            printf("Customer %d took a mug. Free mugs: %d\n", id, free_mugs);
+            pthread_mutex_unlock(&mutex_mugs);
+            break;
+        }
+
+        pthread_mutex_unlock(&mutex_mugs);
+    }
+
+    // Searching for a free tap
+    int tap_id = -1;
+
+    while(tap_id == -1){
+        for(int i = 0; i < NUM_OF_TAPS; i++){
+
+            if(pthread_mutex_trylock(&mutex_taps[i]) == 0){
+                tap_id = i;
+                break;
+            }
+        }
+    }
+
+    printf("Customer %d occupied tap %d.\n", id, tap_id);
+    printf("Customer %d is pouring beer from tap %d.\n", id, tap_id);
+    sleep(2); // pauses executing thread for a certain time in seconds
+
+    pthread_mutex_unlock(&mutex_taps[tap_id]);
+    printf("Customer %d realesed tap %d.\n", id, tap_id);
+
+    printf("Customer %d is drinking beer.\n", id);
+    sleep(3);
+
     pthread_mutex_lock(&mutex_mugs);
 
-    if(free_mugs > 0){
-        free_mugs--;
-        printf("Customer %d took a mug. Free mugs: %d\n", id, free_mugs);
-    } else {
-        printf("Customer %d found no free mugs.\n", id);
-    }
+    free_mugs++;
+    printf("Customer %d returned a mug. Free mugs: %d\n", id, free_mugs);
 
     pthread_mutex_unlock(&mutex_mugs);
 
