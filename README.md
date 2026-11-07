@@ -4,5 +4,5 @@ a simple pub simulator which helped me to improve my idea about mutexes, threads
 
 How to run uploaded program?
 After downloading directory, enter it and just type "make",
-then ./pub_sim
+then type "./pub_sim" and program will execute
 
