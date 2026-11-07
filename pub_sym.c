@@ -35,25 +35,31 @@ void* customer(void* arg){
     // Searching for a free tap
     int tap_id = -1;
 
-    while(tap_id == -1){
-        for(int i = 0; i < NUM_OF_TAPS; i++){
+    for(int i = 0; i < BEERS_PER_CUST; i++){
 
-            if(pthread_mutex_trylock(&mutex_taps[i]) == 0){
-                tap_id = i;
-                break;
+        while(tap_id == -1){
+            for(int i = 0; i < NUM_OF_TAPS; i++){
+
+                if(pthread_mutex_trylock(&mutex_taps[i]) == 0){
+                    tap_id = i;
+                    break;
+                }
             }
         }
+
+        printf("Customer %d occupied tap %d.\n", id, tap_id);
+        printf("Customer %d is pouring beer from tap %d.\n", id, tap_id);
+        sleep(2); // pauses executing thread for a certain time in seconds
+
+        pthread_mutex_unlock(&mutex_taps[tap_id]);
+        printf("Customer %d realesed tap %d.\n", id, tap_id);
+
+        printf("Customer %d is drinking beer.\n", id);
+        sleep(3);
+
+        tap_id = -1;
+
     }
-
-    printf("Customer %d occupied tap %d.\n", id, tap_id);
-    printf("Customer %d is pouring beer from tap %d.\n", id, tap_id);
-    sleep(2); // pauses executing thread for a certain time in seconds
-
-    pthread_mutex_unlock(&mutex_taps[tap_id]);
-    printf("Customer %d realesed tap %d.\n", id, tap_id);
-
-    printf("Customer %d is drinking beer.\n", id);
-    sleep(3);
 
     pthread_mutex_lock(&mutex_mugs);
 
